@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Game State Monitor</title>
+    <style>
+        body { font-family: sans-serif; }
+        .state-item { margin-bottom: 10px; }
+        pre { background-color: #f4f4f4; padding: 5px; border: 1px solid #ddd; word-wrap: break-word; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Game State</h1>
+
+    <div class="state-item">
+        <h2>Players:</h2>
+        <pre id="players-info">Waiting for data...</pre>
+    </div>
+
+    <div class="state-item">
+        <h2>Latest Move:</h2>
+        <pre id="move-info">Waiting for data...</pre>
+    </div>
+
+    <div class="state-item">
+        <h2>Latest Offer:</h2>
+        <pre id="offer-info">Waiting for data...</pre>
+    </div>
+
+    <script>
+        const playersDiv = document.getElementById('players-info');
+        const moveDiv = document.getElementById('move-info');
+        const offerDiv = document.getElementById('offer-info');
+        let lastGameState = null;
+
+        async function fetchGameState() {
+            try {
+                const response = await fetch('/game-state'); // Fetch combined state
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const gameState = await response.json();
+
+                // Update display only if the state has changed
+                if (JSON.stringify(gameState) !== JSON.stringify(lastGameState)) {
+                    console.log("Received new game state:", gameState);
+                    console.log("Latest offer:", gameState.latestOffer);
+
+                    // Update Players
+                    playersDiv.textContent = gameState.players !== null ? JSON.stringify(gameState.players, null, 2) : 'N/A';
+
+                    // Update Latest Move
+                    moveDiv.textContent = gameState.latestMove !== null ? JSON.stringify(gameState.latestMove, null, 2) : 'N/A';
+
+                    // Update Latest Offer
+                    offerDiv.textContent = gameState.latestOffer !== null ? JSON.stringify(gameState.latestOffer, null, 2) : 'N/A';
+
+                    lastGameState = gameState;
+                }
+            } catch (error) {
+                console.error("Could not fetch game state:", error);
+                playersDiv.textContent = 'Error connecting to server.';
+                moveDiv.textContent = 'Error connecting to server.';
+                offerDiv.textContent = 'Error connecting to server.';
+            }
+        }
+
+        // Poll every 1 second (1000 milliseconds)
+        setInterval(fetchGameState, 1000);
+
+        // Fetch immediately on load
+        fetchGameState();
+    </script>
+</body>
+</html> 
