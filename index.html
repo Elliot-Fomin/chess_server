@@ -34,7 +34,9 @@
 
         async function fetchGameState() {
             try {
-                const response = await fetch('/game-state'); // Fetch combined state
+                // Construct absolute path
+                const fetchUrl = window.location.pathname.endsWith('/') ? window.location.pathname + 'game-state' : window.location.pathname + '/game-state';
+                const response = await fetch(fetchUrl); // Fetch combined state
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
